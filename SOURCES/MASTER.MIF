@@ -1,0 +1,140 @@
+# 4DOS master makefile
+
+# Tools setup
+
+cc = wcc
+as = ml
+link = wlink
+
+# Build flags
+
+cflags = -zq -bt=dos -DENGLISH -D__4DOS -mm -zp1 -zls -s #-wx -we
+aflags = -nologo -c -Zm -DENGLISH -D__4DOS -D__WATCOM__
+lflags =
+
+!ifdef debug
+cflags += -d2
+aflags += -Zi
+lflags += debug all
+!else
+cflags += -oasbmr -0
+!endif
+
+# File locations
+
+.c: ..
+.h: ..
+.asm: ..
+
+# Implicit build rules
+
+.c.obj: .autodepend
+   $(cc) $(cflags) $(cflags_$[&) $[@
+
+.asm.obj
+   $(as) $(aflags) $(aflags_$[&) $[@
+
+# Additional flags for individual objects
+
+cflags_main     = -NT_TEXT
+cflags_parser   = -NT_TEXT
+cflags_dosinit  = -NT_TEXT
+cflags_cmds     = -NT_TEXT
+cflags_expand   = -NTMISC_TEXT
+cflags_eval     = -NTSCREENIO_TEXT
+cflags_filecmds = -NT_TEXT
+cflags_syscmds  = -NT_TEXT
+cflags_select   = -NTSCREENIO_TEXT
+cflags_env      = -NT_TEXT
+cflags_batch    = -NT_TEXT
+cflags_error    = -NT_TEXT
+cflags_window   = -NTSCREENIO_TEXT
+cflags_listall  = -NTSCREENIO_TEXT
+cflags_lines    = -NTSCREENIO_TEXT
+cflags_doscmds  = -NT_TEXT
+cflags_iofmt    = -NTSCREENIO_TEXT
+cflags_doscalls = -NTMISC_TEXT
+cflags_dostty   = -NTSCREENIO_TEXT
+cflags__file    = -NT_TEXT
+cflags_strmenc  = -NTSHARE_TEXT
+cflags_wrapper  = -NT_TEXT
+
+cflags_apprel   = -ml
+
+aflags_4dostart = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_4dos     = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_lerrmsg  = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_modules  = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_ldosumb  = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_initerrs = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_4dlinit  = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_fname    = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_decout   = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_srchenv  = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_parspath = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_findems  = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_findureg = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_iniparse = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_lreloc   = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_hexout   = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+aflags_forceref = -D_CSEG=LOAD -D_PREFIX=L_ -D_MODEL=TINY
+
+aflags_server   = -D_CSEG=SERV -D_MODEL=SMALL
+aflags_swapchk  = -D_CSEG=SERV -D_MODEL=SMALL
+aflags_serverrs = -D_CSEG=SERV -D_MODEL=SMALL
+aflags_reshigh  = -D_CSEG=SERV -D_MODEL=SMALL
+aflags_dosumb   = -D_CSEG=SERV -D_MODEL=SMALL
+aflags_relocate = -D_CSEG=SERV -D_MODEL=SMALL
+aflags_dv       = -D_CSEG=SERV -D_MODEL=SMALL
+aflags_errormsg = -D_CSEG=SERV -D_MODEL=SMALL
+
+aflags_inout    = -D_MODEL=SMALL
+aflags_dosutil  = -D_MODEL=SMALL
+aflags_bcd      = -D_MODEL=SMALL
+aflags_keyparse = -D_MODEL=SMALL
+aflags_tokens   = -D_MODEL=SMALL
+aflags_umbreg   = -D_MODEL=SMALL
+aflags_compdrv  = -D_MODEL=SMALL
+aflags_batdcomp = -D_MODEL=SMALL
+
+# Targets and explicit rules
+
+all : 4dos.com
+
+4dostart.lib : 4dostart.obj
+    wlib -q -b 4dostart -+4dostart.obj
+
+4dosobjs = &
+	   4dos.obj lerrmsg.obj modules.obj ldosumb.obj initerrs.obj    &
+	   forceref.obj 4dlinit.obj fname.obj decout.obj srchenv.obj    &
+	   findems.obj findureg.obj iniparse.obj lreloc.obj hexout.obj  &
+	   server.obj swapchk.obj serverrs.obj reshigh.obj dosumb.obj   &
+	   relocate.obj dv.obj errormsg.obj cstrt086.obj                &
+	   doscalls.obj main.obj parser.obj dosinit.obj iofmt.obj       &
+	   dostty.obj expand.obj $(_file_obj) win95.obj misc.obj        &
+	   env.obj error.obj cmds.obj screenio.obj batch.obj            &
+	   dircmds.obj filecmds.obj syscmds.obj doscmds.obj select.obj  &
+	   window.obj listall.obj lines.obj                             &
+	   inout.obj dosutil.obj eval.obj bcd.obj keyparse.obj          &
+	   tokens.obj umbreg.obj compdrv.obj strmenc.obj wrapper.obj
+
+4dos.com : $(4dosobjs) 4dostart.lib 4dos.wlk apprel.exe
+    $(link) $(lflags) name $@ @4dos.wlk file { $(4dosobjs) }
+    apprel $@ 0
+
+cstrt086.obj : cstrt086.asm
+    wasm -bt=DOS -mm -0 -I..\h $[@
+
+apprel.exe : apprel.c
+    wcl -zq -ml $<
+
+# Clean target
+
+clean : .symbolic
+    @if exist *.obj del *.obj
+    @if exist *.lib del *.lib
+    @if exist *.com del *.com
+    @if exist *.exe del *.exe
+    @if exist *.bak del *.bak
+    @if exist *.err del *.err
+    @if exist *.map del *.map

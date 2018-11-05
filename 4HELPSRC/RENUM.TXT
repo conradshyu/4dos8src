@@ -1,0 +1,10 @@
+246 621 20 Move INI, commands, extra stuff up
+241 241 10 Move up
+161 234 10 Move up, make room for more variables
+91 153 10 Move up
+76 85 6 Move up, make room for variables / functions main topic
+61 71 1 Make room for aliases / batch files main topic
+41 41 -5 Move redirection into cmd line area
+13 15 233 startup to 246-248
+2 9 1 Make room for About
+

@@ -1,0 +1,21 @@
+Behaviour change in original KSTACK :
+
+* The environment memory block freeing routines have been removed since they will be done automatically by DOS.
+
+
+About KSTACK unload feature:
+
+* The DOS TSR function (i.e. Int 21h AH 31h) is not used. Instead, it mimics that function in order to have a greater control when going resident.
+
+* The type of memory used depends on current setting, so if UMB is available and KSTACK is loaded using the LOADHIGH command, it will be respected and search for the available free memory space is done first at the UMB and then the low memory.
+
+* Currently, HMA is not yet supported. Problem: memory manager may not have a "Deallocate HMA memory block" function so KSTACK may not be unloadable.
+
+* The once resident PSP area of KSTACK has been removed to shrink memory usage by 256 bytes.
+
+* /U or /u parameter is added for unloading KSTACK. If it's not specified, the original parameter parsing behaviour is performed.
+
+
+Overall:
+
+* Almost all of the original non-resident portion of the code have been changed. e.g. label renaming, conversion to macros. The resident portion only have very little code additions without affecting original code behaviour. Conversion to macros usage is intended to make the source easier to read.

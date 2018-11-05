@@ -1,0 +1,13 @@
+# Setup file for all Watcom MAKE files
+
+# Extensions setup
+.EXTENSIONS:
+.EXTENSIONS: .obj .asm .c
+
+# Local rules
+.c.obj
+   $(%CC) -fo=$^@ $[.
+
+.asm.obj
+   $(%ASM) -Fo$^@ $[.
+

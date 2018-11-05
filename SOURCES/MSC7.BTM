@@ -1,0 +1,5 @@
+:
+: Append RTL source header directory (for "msdos.h")
+:
+set include=%include;C:\VC\SOURCE\MSVCCRT\H
+set _masm=ml

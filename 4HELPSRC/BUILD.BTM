@@ -1,0 +1,4 @@
+c:\bp\bin\tasm -Id:\src\tpro\asm tpmouse
+c:\bp\bin\tpc 4help
+c:\bp\bin\tpc helpcfg
+c:\bp\bin\tpc 4make

@@ -1,0 +1,421 @@
+@echo off
+:============================================================================
+:
+:  This file builds all 4xxx / TCMD products.
+:
+:  Call with:
+:
+:     %1  = Product name or names, separated by periods, or ALL for
+:           all products
+:     %2& = Command line arguments (any order):
+:              P = compile pre-release version
+:              R = compile release version
+:              D = compile debug version
+:              New build number (must be numeric)
+:              Language name to compile for that language
+:
+:============================================================================
+:
+:     Start processing
+:
+setlocal
+unalias *
+if "%_DOS" == "DOS" set fe1=%_env
+
+:: Set up aliases etc.
+set plh=
+set plname=
+alias error = `on error %+ set _err=%1 %2 %3 %4 %5 %+ goto error`
+on break error `Build interrupted`
+on errormsg error `Build stopped`
+
+:: Set the overall timer
+timer /1 ON >& nul
+set t1=ON
+
+:: Check environment
+iff %_dos == DOS then
+   if %_env lt 2560 error `At least 2.5K free environment space required!`
+endiff
+
+:: Set up system-specific variables
+call makeset.btm
+
+:: Handle 4NT under Win95/98/2000
+if "%_dos" == "WIN95" .or. "%_dos" == "WIN95C" .or. "%_dos" == "WIN98" .or. "%_dos" == "WIN98C" .or. "%_dos" == "WIN2K" set _dos=NT
+
+:: Host-dependent data for PATH
+set path_dos=%watcom\binw;%_masm\bin;%_masm\binr;%os2sdk\bin
+set path_os2=%watcom\binp;%watcom\binw;%masmold\binp;%masmold\binb;%os2sdk\bin
+:: set path_nt=%watcom\binnt;%watcom\binw;%masm386;%os2sdk\bin
+set path_nt=%watcom\binnt;%watcom\binw;%_masm\bin;%_masm\binr;%os2sdk\bin
+
+:============================================================================
+:: Target-dependent compiler and assembler names
+set comp_dos=wcc
+set comp_w16=wcc
+set comp_nt=wcc386
+set comp_w32=wcc386
+set comp_o16=wcc
+set comp_os2=wcc386
+set comp_pm=wcc386
+
+set asm_dos=ml
+set asm_w16=ml
+set asm_nt=ml
+set asm_w32=ml
+set asm_o16=ml
+set asm_os2=ml
+set asm_pm=ml
+:: set asm_nt=masm386 -V -Mx
+
+:============================================================================
+:: Target-dependent INCLUDE paths
+::    These assume SDK include files are in WATCOM directories, and will
+::    need some adjusting if separate SDK directories must be used
+::    (Adjustment already done for OS/2)
+set inc_dos=%watcom\h;%spontasm\sourcejp;%spontasm\include;%_masm\include;%tui
+set inc_w16=%watcom\h;%watcom\h\win;%ctl3d;%spontasm\sourcejp;%spontasm\include
+set inc_nt=%watcom\h;%watcom\h\nt
+set inc_w32=%watcom\h;%watcom\h\nt
+set inc_o16=%watcom\h;%watcom\h\os2;%spontasm\sourcejp;%spontasm\include
+set inc_os2=%os2sdk\h;%os2sdk\inc;%watcom\h;%watcom\h\os2;%spontasm\sourcejp;%spontasm\include;%masmold\include
+set inc_pm=%os2sdk\h;%os2sdk\inc;%watcom\h;%watcom\h\os2;%spontasm\sourcejp;%spontasm\include;%masmold\include
+
+:: Target-dependent library paths
+::    ** WATCOM directories are not needed here if WATCOM system
+::    ** directives work as designed
+::    These assume SDK libraries are in WATCOM directories, and will
+::    need some adjusting if separate SDK directories must be used
+::    (already adjusted for OS/2)
+set lib_dos=%spontasm\sourcejp;%_masm\lib;%tui
+set lib_w16=%ctl3d\win16
+set lib_nt=
+set lib_w32=
+set lib_o16=%spontasm\sourcejp;%masmold\lib
+set lib_os2=%os2sdk\lib
+set lib_pm=%os2sdk\lib
+
+:============================================================================
+:: Watcom C options
+::    Base for all systems
+:: set opt_c_base=-d%%language -d__%%defprod -d_%%family -wx -fr%%product.err -zq -ze -j -ol -or
+set opt_c_base=-d%%language -d__%%defprod -d_%%family -wx -fr%%product.err -zq -ze
+set opt_c_beta=-d__BETA
+set opt_c_debug=-d2
+
+::    DOS compiles
+set opt_c_dos=-bt=dos -mm -s -zp1 -os
+
+::    16-bit Windows compiles -- base plus additional options for EXE and DLL
+:: set opt_c_w16=-bt=windows -2 -mm -s -zp1 -ot
+set opt_c_w16=-bt=windows -2 -mm -s -zp1
+set opt_c_w16_exe=-zw
+set opt_c_w16_dll=-zw -bd -zu
+
+::    32-bit Windows compiles -- base plus additional options for DLL
+set opt_c_nt=-dSTRICT -bt=nt -zw -zp4 -3s -os -s
+set opt_c_nt_dll=-bd
+::    Compile options for Win32 are the same as for NT character mode
+set opt_c_w32=%opt_c_nt
+set opt_c_w32_dll=%opt_c_nt_dll
+
+::    OS/2 compiles -- 16-bit base, 32-bit base, and additional options for EXE and DLL
+set opt_c_o16=
+set opt_c_os2=-bt=OS2 -zp1 -3s -os -s
+set opt_c_os2_exe=-bm
+set opt_c_os2_dll=-bd
+::    Compile options for PM are the same as for character mode
+set opt_c_pm=%opt_c_os2
+set opt_c_pm_exe=%opt_c_os2_exe
+set opt_c_pm_dll=%opt_c_os2_dll
+
+:: Microsoft MASM options
+set opt_asm_base=-nologo -c -D%%language -D__%%defprod -D_%%family -D_WATCOM=1
+REM set opt_asm_beta=-d__BETA
+set opt_asm_debug=-Zd -Zi
+set opt_asm_dos=-Zm -D__MODEL=SMALL
+set opt_asm_w16=-Zm -D_MODEL=MEDIUM
+set opt_asm_nt=-Zm -Cx
+set opt_asm_w32=%opt_asm_nt
+set opt_asm_o16=-Zm
+set opt_asm_os2=-Zm -D_MODEL=FLAT
+set opt_asm_pm=%opt_asm_os2
+
+:: Watcom linker options
+set opt_link_debug=d all
+set opt_link_debug_w16=opt symf
+set opt_link_debug_os2=opt symf
+
+:============================================================================
+:: Setup and initialize variables
+if %# eq 0 error `Product name(s) or 'all' must be specified`
+set language=ENGLISH
+set debug=N
+set prerelease=N
+set release=N
+set beta=Y
+set makeopt=/e /h
+set allprod=4dos.4os2.4dosnt.tcmd16.tcmd32.tcmdos2
+
+:: Set up the log file
+log /w make.log %+ log off
+
+:: Set up product list
+set prodlist=%1
+if "%prodlist" == "all" set prodlist=%allprod
+log Starting build of:  %@upper[%prodlist]
+
+:: Parse the other command line arguments
+do while "%2" != ""
+   iff %@numeric[%2] == 1 then
+      :: New build number
+      log New build number %2
+      call build.btm %2
+   elseiff "%2" == "d" then
+      :: D -- build debug version
+      set debug=Y
+      echo **Debug build
+      log **Debug build
+   elseiff "%@left[1,%2]" == "p" then
+      :: P -- build for pre-release
+      set prerelease=Y
+      set beta=N
+      echo **Pre-release build
+      log **Pre-release build
+   elseiff "%2" == "r" then
+      :: R -- build for release
+      set release=Y
+      set beta=N
+      echo **Release build
+      log **Release build
+   elseiff "%@instr[0,1,%2]" == "/" .or. "%@instr[0,1,%2]" == "-" then
+      :: MAKE option
+      set makeopt=%makeopt %2
+   else
+      :: Anything else must be the language
+      set language=%@upper[%1]
+      echo Compiling for %language
+   endiff
+   shift
+enddo
+
+:: Set up path
+path %[path_%_dos]
+if "%path" == "" error `Could not set up PATH`
+
+:: Set up language-specific extensions used in make files
+iff "%language" == "English" then
+   set txt=txt
+   set txt_asm=asm
+   set mhdr=h
+elseiff "%language" == "German" then
+   set txt=txd
+   set txt_asm=asd
+   set mhdr=h_d
+endiff
+
+:: Open the product list file
+set plname=%@unique[.]
+copy /q products.md %plname
+touch /q %plname
+set plh=%@fileopen[%plname,read,t]
+if "%plh" == "-1" error `Cannot open product list`
+
+:: Loop through all products to be built
+do while "%prodlist" != ""
+
+   :: Get current product name, then discard it from the list
+   set product=%@upper[%@word[".",0,%prodlist]]
+   set dotpos=%@index[%prodlist,.]
+   if %dotpos == -1 set dotpos=%@len[%prodlist]
+   set prodlist=%@instr[%@inc[%dotpos],255,%prodlist]
+
+   :: Set the product timer and log the build
+   timer /2 on >& nul
+   set t2=ON
+   echo **Starting %product build
+   log **Starting %product build
+
+   :: Rewind the product list file and loop through it looking for all the
+   :: lines for this product
+   
+   set dummy=%@fileseek[%plh,0,0]
+   do forever
+
+      :: Read a line of product information and see if we want it
+      set line=%@fileread[%plh]
+rem echo %line
+      if "%line" == "**EOF**" leave
+      set lineprod=%@word[" ",0,%line]
+      if "%lineprod" != "%product" iterate
+
+      :: Set the file timer
+      timer /3 ON >& nul
+      set t3=ON
+
+      :: Process a line
+      set defprod=%@upper[%@word[" ",1,%line]]
+      set makename=%@word[" ",2,%line].wmk
+      set exename=%@word[" ",3,%line]
+      set targetenv=%@word[" ",4,%line]
+      set obj=%@word[" ",5,%line]
+      set ftype=%@word[" ",6,%line]
+      set brand=%@word[" ",7,%line]
+      set family=%@word[" ",8,%line]
+      set envfile=%@word[" ",9,%line]
+      set mapname=%@name[%exename].map
+
+      iff "%envfile" != "" .and. "%envfile" != "none" then
+         call %envfile.btm
+      endiff
+
+      echo ..Checking %@upper[%exename]
+      log ..Checking %@upper[%exename]
+
+      :: Set up branding
+      iff "%brand" == "Y" then
+         iff "%prerelease" == "Y" then
+            set brandname=prerel.%targetenv
+            if not exist %brandname error `Missing pre-release brand file` %@upper[%brandname]
+         elseiff "%release" == "Y" then
+            set brandname=release.%targetenv
+            if not exist %brandname error `Missing release brand file` %@upper[%brandname]
+         else
+            set brandname=beta.%obj
+            set betatemp=betatemp.%obj
+            if not exist %betatemp error `Missing beta brand template file` %@upper[%betatemp]
+            copy /q /a %betatemp+build.txt %brandname
+         endiff
+      endiff
+
+      :: Define link target
+::      set linktarg=%@if["%language" == "English",%exename,%obj\%exename]
+      set linktarg=%obj\%exename
+      set linkmap=%obj\%mapname
+
+      :: Set up proper INCLUDE and LIB variables for the target environment
+      set include=%[inc_%targetenv]
+      if "%include" == "" error `Could not set up INCLUDE path`
+      set lib=%[lib_%targetenv]
+rem      if "%lib" == "" error `Could not set up LIB path`
+
+      :: Set up compiler, assembler, and linker commands
+      set cc=%[comp_%targetenv]
+      set asm_opt=%opt_asm_base %@if[%debug == Y,%opt_asm_debug, ] %@if[%beta == Y,%opt_asm_beta, ] %[opt_asm_%[targetenv]]
+      set asm=%[asm_%targetenv] %asm_opt
+      set link=wlink %@if[%debug == Y,%opt_link_debug %[opt_link_debug_%[targetenv]], ] @%@name[%makename].wlk
+
+      :: Set compiler and assembler options (both Watcom C and MASM use
+      :: an environment variable named after the compiler / assembler to
+      :: hold options).  We use a variable to avoid command line length
+      :: problems.
+      set %cc=%opt_c_base %@if[%debug == Y,%opt_c_debug, ] %@if[%beta == Y,%opt_c_beta, ] %[opt_c_%[targetenv]] %[opt_c_%[targetenv]_%[ftype]]
+      if "%debug" == "Y" echo C options:  %[%cc]
+::      set %asm=%opt_asm_base %@if[%debug == Y,%opt_asm_debug, ] %[opt_asm_%[targetenv]]
+::      if "%debug" == "Y" echo ASM options:  %[%asm]
+
+      :: Set up any special linker variables for link files that use them
+      set loadopt=%@if[%debug == Y,preload,loadoncall]
+
+      :: Save the pre-build target attributes
+      iff exist %linktarg then
+         set oldsize=%@filesize[%linktarg]
+         set oldage=%@fileage[%linktarg]
+      else
+         set oldsize=0
+         set oldage=0
+      endiff
+
+      :: Do the build
+      if "%_DOS" == "DOS" echo Using %@eval[%fe1 - %_env] bytes of environment space, %_env bytes remain free
+      wmake %makeopt /f %makename %linktarg
+      if errorlevel 1 (log ... error on %@upper[%exename] %+ error %product `build failed on` %@upper[%exename])
+      log ...completed %@upper[%exename]
+
+      :: Post-process the file if it's there, and it changed
+      iff exist %linktarg then
+         iff %@filesize[%linktarg] != %oldsize .or. %@fileage[%linktarg] != %oldage then
+
+            :: If a brand is required do the internal brand
+            iff "%brand" == "Y" then
+               iff "%_DOS" == "OS2" then
+                  start /dos /wait /c ibrandos %brandname
+               else
+                  ibrandos %brandname
+               endiff
+            endiff
+
+            :: If this is the English version copy the built file and any map
+            :: up to the source directory
+            if "%language" == "ENGLISH" copy %linktarg %linkmap .\
+      
+            :: For branded executables save a copy with a .PR extension for
+            :: a pre-release version, with a .SHR (shareware)  extension for
+            :: a release version, and add the personal brand for a beta version
+            iff "%brand" == "Y" then
+               iff "%prerelease" == "Y" then
+                  copy %exename %@name[%exename].pr
+               elseiff "%release" == "Y" then
+                  copy %exename %@name[%exename].shr
+               else
+                  call brbeta %exename
+               endiff
+            endiff
+            echo.
+            echo Build time for %@upper[%exename] (%product) is %@timer[3]
+
+         else
+            echo ....file is up to date, not built
+            log ....file is up to date, not built
+
+         endiff
+      endiff
+
+:: EWL 11/9/98 This endlocal was causing problems, so I rem'd it out
+::
+::      iff "%envfile" != "" then
+::         endlocal
+::      endiff
+
+      :: Clean up build timer
+      timer /3 >& nul
+      unset t3
+
+   enddo
+   echo.
+   echo Total time for all %product files is %@timer[2]
+   timer /2 >& nul
+   unset t2
+enddo
+
+echo.
+echo Total time in MAKE.BTM is %@timer[1]
+timer /1 >& nul
+unset t1
+goto done
+
+
+:: Error handling
+:error
+on errormsg
+on break
+rem beep 1760 3 880 3
+echo.
+echo ERROR:  %_err
+echo.
+log ERROR:  %_err
+log On error, PATH=%path
+log ......... INCLUDE=%include
+log ......... LIB=%lib
+
+:: All done
+:done
+if "%plh" != "" .and. "%plh" != "-1" set plh=%@fileclose[%plh]
+if "%plname" != "" del /q %plname
+(for %n in (1 2 3) if "%[t%n]" == "ON" timer /%n) >& nul
+
+endlocal
+quit
+
+

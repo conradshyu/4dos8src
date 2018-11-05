@@ -1,0 +1,3 @@
+copy topnum1.dat topnum.dat
+awk -f toplink2.awk < 4dos.ed > 4dos.ed1
+

@@ -1,0 +1,358 @@
+{                          EDISCRN.INC
+                           EDINST 4.0
+             Copyright (c) 1985, 87 by Borland International, Inc.            }
+
+  procedure ScreenInstall;
+    {-Customize FirstEd's screen.}
+  var
+    Ch : Char;
+    ScreenOfs : LongInt;
+
+    function SnowTest : Boolean;
+      {-Return true if snow is detected}
+    const
+      YesOrNo : array[Boolean] of Char = ('N', 'Y');
+    var
+      Ch : Char;
+      I : Integer;
+    begin                    {SnowTest}
+      Ch := YesOrNo[RetraceMode];
+      RetraceMode := False;
+      Write('Press any key to begin snow test...');
+      while ReadKey = #0 do
+        ;
+      for I := 1 to 4000 do
+        EdFastWrite(' ', 1, 80, LoColor);
+      WriteLn;
+      RetraceMode := YesNo('Did you see any "snow" on your display?', Ch);
+      SnowTest := RetraceMode;
+    end;                     {SnowTest}
+
+    procedure InstallColors(var AA : AttributeArray);
+      {-Install default colors}
+      {Note: This routine is designed to be easily incorporated into
+       other installation programs for editors based on the Toolbox,
+       including MSINST. Only two changes need to be made if more than four
+       video attributes are used: (1) FarTopRow and FarBotRow need to be
+       adjusted, and (2) the AttrsUsed set needs to be modified accordingly.
+       For example, if the block cursor attribute is also used, FarBotRow
+       can be increased by 1, and CursorColor would be added to the set.
+       If all defined attributes are used, as they are in MicroStar, the
+       box on the right (Far) side of the screen will be the same height
+       as that on the left side.}
+    const
+      {if the asterisk is changed to another character, the BoxCharArray
+       in DrawAttributeBox must also be changed}
+      Choice : string[3] = ' * ';
+
+      {Attributes used by FirstEd. For Microstar, use [TxtColor..Alt2Color]}
+      AttrsUsed : set of ColorType = [TxtColor..CmdColor];
+
+      {box on left}          {box on right (Far side)}
+      TopRow = 2; FarTopRow = 8; {for MicroStar, these would be equal}
+      BotRow = 21; FarBotRow = 15; {so would these}
+      LeftCol = 5; FarLeftCol = 38;
+      RtCol = 33; FarRtCol = 76;
+
+      {prompt box on the bottom -- also defined by LeftCol and FarRtCol}
+      TopPrompt = 23;
+      BotPrompt = 25;
+
+      {prompts}
+      MainPrompt : string[57] =
+      'Use  to move highlight, Ù to select, <Esc> to continue';
+      MakeSelectionPrompt =
+      'Use '^Z' to move highlight, Ù to select, <Esc> to cancel';
+      AnyKey = 'Press any key to continue...';
+      HereIs : string[37] = ' Here is a sample of this attribute. ';
+
+    var
+      Ch : Char;
+      CT, OldCT : ColorType;
+      WAA : AttributeArray;
+      Row, Col, Attr : Byte;
+      Done : Boolean;
+      BoxColorArray : array[3..20 {row} , 6..32 {col} ] of Byte;
+
+      procedure Prompt(Message : string);
+        {-Show message centered in prompt box}
+      var
+        Width, Col : Byte;
+      begin
+        Width := Pred(FarRtCol-LeftCol);
+        BlankLine[0] := Chr(Width);
+        EdFastWrite(BlankLine, Succ(TopPrompt), Succ(LeftCol), LoColor);
+        Col := Succ(LeftCol)+((Width-Length(Message)) shr 1);
+        EdFastWrite(Message, Succ(TopPrompt), Col, LoColor);
+      end;
+
+      procedure CalcRowCol(Attr : Byte; var Row, Col : Byte);
+        {-Calculate the row and column for an attribute}
+      begin
+        {calculate row}
+        Row := (TopRow+2)+(Attr and $F);
+        {calculate column}
+        Col := (LeftCol+2)+(3*(Attr div 16));
+      end;
+
+      procedure DrawChart;
+        {-Draw the color chart and initialize BoxColorArray}
+      var
+        I : Integer;
+        Row, Col, Attr : Byte;
+      begin
+        FillChar(BoxColorArray, SizeOf(BoxColorArray), TiColor);
+        for Attr := 0 to 127 do begin
+          CalcRowCol(Attr, Row, Col);
+          EdFastWrite(Choice, Row, Col, Attr);
+          for I := Col to (Col+2) do
+            BoxColorArray[Row, I] := (Attr and $F0)+(TiColor and $F);
+        end;
+      end;
+
+      function ColorName(CType : ColorType) : VarString;
+        {-Return a string describing the specified ColorType}
+      begin                  {ColorName}
+        case CType of
+          {the following are used by both FirstEd and MicroStar}
+          TxtColor : ColorName := 'Normal text';
+          BlockColor : ColorName := 'Marked blocks';
+          BordColor : ColorName := 'Window status line';
+          CmdColor : ColorName := 'Prompt line';
+
+          {the following are not used by FirstEd, only by MicroStar}
+          CursorColor : ColorName := 'Block cursor';
+          MnColor : ColorName := 'Normal menu';
+          MfColor : ColorName := 'Menu frame';
+          MsColor : ColorName := 'Selected menu item';
+          MhColor : ColorName := 'Highlighted character in menu';
+          BoldColor : ColorName := 'Bold attribute';
+          DblColor : ColorName := 'Doublestrike attribute';
+          UndColor : ColorName := 'Underscore attribute';
+          SupColor : ColorName := 'Superscript attribute';
+          SubColor : ColorName := 'Subscript attribute';
+          Alt1Color : ColorName := 'Compressed attribute';
+          Alt2Color : ColorName := 'Italic attribute';
+        end;
+      end;                   {ColorName}
+
+      function WhichRow(CType : ColorType) : Byte;
+        {-Given a color type, return the row on which the color name should
+         be displayed.}
+      var
+        CT : ColorType;
+        LoopCount : Byte;
+      begin                  {WhichRow}
+        LoopCount := 0;
+        for CT := TxtColor to CType do
+          if CT in AttrsUsed then
+            Inc(LoopCount);
+        WhichRow := FarTopRow+3+Pred(LoopCount);
+      end;                   {WhichRow}
+
+      procedure ColorSample(Attr : Byte);
+        {-Change the attribute of the color sample}
+      begin
+        EdChangeAttribute(Length(HereIs), Succ(FarTopRow), Succ(FarLeftCol), Attr);
+      end;
+
+      procedure DrawAttributeBox(Attr, Row, Col : Byte);
+        {-Draw special box around current selection}
+      const
+        BoxCharArray : array[ -1..1, -2..2] of string[1] =
+        (('Ú', 'Ä', 'Ä', 'Ä', '¿'),
+         ('³', ' ', '*', ' ', '³'),
+         ('À', 'Ä', 'Ä', 'Ä', 'Ù'));
+      var
+        A : Byte;
+        I, J, RowDelta, ColDelta : Integer;
+      begin
+        for RowDelta := -1 to 1 do
+          for ColDelta := -2 to 2 do begin
+            I := Row+RowDelta;
+            J := Col+ColDelta;
+            A := BoxColorArray[I, J];
+
+            {leave the attribute of ' * ' alone}
+            case ColDelta of
+              -1..1 : if RowDelta = 0 then
+                        A := Attr;
+            end;
+            EdFastWrite(BoxCharArray[RowDelta, ColDelta], I, J, A);
+          end;
+      end;
+
+      procedure ShowChoice(Attr : Byte; FirstCall : Boolean);
+        {-Show the currently selected attribute}
+      var
+        Row, Col : Byte;
+      begin
+        {remove the previous box, if any}
+        if not FirstCall then
+          RestoreWindow(WP, False);
+
+        {calculate the row and column for the new one}
+        CalcRowCol(Attr, Row, Col);
+
+        {save the portion of the window that will be overwritten}
+        SaveWindow(WP, Pred(Col), Pred(Row), Col+3, Succ(Row), FirstCall);
+
+        {draw the box that marks the current attribute}
+        DrawAttributeBox(Attr, Row, Succ(Col));
+
+        {change the attribute of the sample string too}
+        ColorSample(Attr);
+      end;
+
+      procedure MakeSelection(var Attr : Byte);
+        {-Allow user to select an attribute}
+      var
+        Done : Boolean;
+        A : Byte;
+      begin                  {MakeSelection}
+        WP := nil;
+        Done := False;
+        A := Attr;
+        ShowChoice(A, True);
+        Prompt(MakeSelectionPrompt);
+        repeat
+          case GetCursorCommand of
+            ^M :             {select}
+              begin
+                Attr := A;
+                Done := True;
+              end;
+            ^E, ^W :         {up}
+              if (A and $F) = 0 then
+                A := A+15
+              else
+                A := Pred(A);
+            ^X, ^Z :         {down}
+              if (A and $F) = $F then
+                A := A-15
+              else
+                A := Succ(A);
+            ^S :             {left}
+              if A <= 15 then
+                A := A+112
+              else
+                A := A-16;
+            ^D :             {right}
+              if A >= 112 then
+                A := A-112
+              else
+                A := A+16;
+            Escape : Done := True; {cancel}
+          end;
+          ShowChoice(A, False);
+        until Done;
+        RestoreWindow(WP, True);
+      end;                   {MakeSelection}
+
+      procedure HighlightName(OldCT, CT : ColorType);
+        {-Highlight name of current selection}
+      var
+        N : Integer;
+      begin
+        {number of attribute bytes to change}
+        N := Pred(FarRtCol-FarLeftCol);
+
+        {remove highlight from OldCT}
+        EdChangeAttribute(N, WhichRow(OldCT), Succ(FarLeftCol), LoColor);
+
+        {highlight CT}
+        EdChangeAttribute(N, WhichRow(CT), Succ(FarLeftCol), EdColor);
+      end;
+
+    begin                    {InstallColors}
+      {initialize}
+      WAA := AA;
+      SetColor(TiColor);
+      ClrScr;
+
+      {hide the cursor}
+      EdSetCursor(HiddenCursor);
+
+      {draw the choices box}
+      MakeBox(LeftCol, TopRow, RtCol, BotRow, TiColor);
+      EdFastWrite(' Choices ', TopRow, LeftCol+10, TiColor);
+
+      {draw the choices}
+      for CT := TxtColor to Alt2Color do
+        if CT in AttrsUsed then
+          EdFastWrite(ColorName(CT), WhichRow(CT), FarLeftCol+3, LoColor);
+
+      {draw the menu box on the right}
+      MakeBox(FarLeftCol, FarTopRow, FarRtCol, FarBotRow, TiColor);
+      EdFastWrite(' Sample ', FarTopRow, FarLeftCol+15, TiColor);
+      EdFastWrite('ÃÄÄÄÄÄÄÄÄÄÄÄÄ Attributes ÄÄÄÄÄÄÄÄÄÄÄÄÄ´', FarTopRow+2,
+                  FarLeftCol, TiColor);
+      EdFastWrite(HereIs, Succ(FarTopRow), Succ(FarLeftCol), TiColor);
+
+      {draw the prompt box}
+      MakeBox(LeftCol, TopPrompt, FarRtCol, BotPrompt, TiColor);
+      Prompt(MainPrompt);
+
+      {get choices}
+      CT := TxtColor;
+      Done := False;
+      DrawChart;
+      OldCT := CT;
+      repeat
+        ColorSample(WAA[CT]);
+        HighlightName(OldCT, CT);
+        OldCT := CT;
+        Ch := GetCursorCommand;
+        repeat
+          case Ch of
+            ^M : begin       {select}
+                   MakeSelection(WAA[CT]);
+                   Prompt(MainPrompt);
+                 end;
+            ^E, ^W :         {scroll up}
+              if CT = TxtColor then
+                CT := Alt2Color
+              else
+                CT := Pred(CT);
+            ^X, ^Z :         {scroll down}
+              if CT = Alt2Color then
+                CT := TxtColor
+              else
+                CT := Succ(CT);
+            Escape : Done := True; {done}
+          end;
+        until (CT in AttrsUsed);
+      until Done;
+
+      {copy the working array to the actual array}
+      AA := WAA;
+
+      EdSetCursor(NormalCursor);
+    end;                     {InstallColors}
+
+  begin                      {ScreenInstall}
+
+    {Search for screen installation ID string}
+    ScreenOfs := FindString(SIDstring, ScreenDefaults, SizeOf(ScreenDefaults));
+    if ScreenOfs = 0 then
+      HaltError('Screen defaults ID string not found in '+ProgName);
+
+    {install colors}
+    with ScreenDefaults do
+      if (ScreenAdr = $B800) then begin
+        {check for snow first}
+        GoodColorCard := SnowTest;
+        InstallColors(ColorAttr);
+      end
+      else
+        InstallColors(MonoAttr);
+
+    {reset screen color}
+    SetColor(LoColor);
+
+    {write modified defaults}
+    if not ModifyDefaults(ScreenOfs, ScreenDefaults, SizeOf(ScreenDefaults)) then
+      HaltError('Error writing screen defaults to '+ProgName);
+
+  end;                       {ScreenInstall}
+

@@ -1,0 +1,428 @@
+
+                              JP Software
+
+                          4MAKE Documentation
+
+                     Version 6.02 -- April 12, 1999
+
+
+Copyright 1997-1999, JP Software Inc., All Rights Reserved.  Published
+by JP Software Inc., P.O. Box 1470, E. Arlington, MA 02474, U.S.A.,
+phone 781-646-3975, fax 781-646-0904.
+
+This file explains how to use the 4DOS help file compiler, 4MAKE.
+
+4MAKE and the 4DOS help text source file, 4DOS.TXT, are available to
+registered users of 4DOS, but may not be distributed to others.  See the
+file UTILREAD.TXT on your Help Text Disk for more information on your
+license to use 4MAKE and 4DOS.TXT.
+
+We make 4MAKE and 4DOS.TXT available to 4DOS users to allow you to
+modify the help text for your own non-commercial purposes as specified
+in the license agreement.  If you find the 4DOS help system useful and
+want to make use of its capabilities in your own work, contact us for
+information on licensing the 4DOS HELP engine.
+
+If you program in Pascal you may want to consider purchasing the Turbo
+Professional or Object Professional toolkit for Turbo Pascal.  4DOS's
+4HELP.EXE is based on a modified version of Turbo Professional's TPHELP,
+and 4MAKE is a modified version of MAKEHELP.  Turbo Professional and
+Object Professional are available from TurboPower Software, P.O. Box
+49009, Colorado Springs, C0 80949-9009, 800-333-4160.  They include an
+enormous variety of tools for Turbo Pascal programmers (similar toolkits
+are also available for C programmers), and we recommend them highly.
+
+
+Introduction
+------------
+
+   The 4DOS HELP file 4DOS.HLP is compiled, meaning that the original
+   ASCII text from the file 4DOS.TXT is processed and compressed to
+   create 4DOS.HLP.  (If you had a previous version of 4MAKE, please
+   note that these file names have changed slightly from older
+   versions.)  4MAKE is the compiler which performs the processing and
+   compression operations.
+
+   In order to modify the help text using this system, you must perform
+   the following steps:
+
+      1) Copy 4DOS.TXT and 4MAKE.EXE to the directory or disk you will
+      be using to make the modifications.
+
+      2) Use an editor to modify 4DOS.TXT.  Because 4DOS.TXT contains a
+      variety of special characters, including a complete table of all
+      ASCII characters, your editor must be able to handle the full
+      ASCII character set (characters 1 - 254).  We use the programmer's
+      editor Brief to edit 4DOS.TXT, and many other ASCII file editors
+      will work equally well.
+
+      3) Run 4MAKE to create a new 4DOS.HLP file.  4MAKE has no command
+      line parameters, and should simply be run via the command "4MAKE",
+      from the directory containing the modified 4DOS.TXT file.
+
+      4) Install the new 4DOS.HLP in your 4DOS directory for use with
+      the copy of 4HELP.EXE that came with 4DOS.
+
+      5) Repeat steps 2 through 4 as necessary to correct any errors in
+      the new help file.
+
+
+Help File Format
+----------------
+
+   The remainder of this documentation will explain the format of the
+   4DOS.TXT file.  You will probably need to refer to the existing
+   4DOS.TXT file as an example in order to understand the explanations
+   below.
+
+   The help text file contains three kinds of information:  the text
+   itself, special characters embedded within the text to control
+   display attributes and cross-referencing, and control directives.
+
+   The help text simply consists of the text you wish to see on the
+   screen.  The text is displayed at the width specified by the !WIDTH
+   directive.  Lines which begin at the left margin are word-wrapped
+   automatically; lines which are indented are not word-wrapped.  There
+   is a limit of 2000 lines of text per help topic.
+
+
+Special Characters
+------------------
+
+   You can embed special characters within the text to control display
+   attributes and cross referencing.  When reading the information
+   below, please note that characters listed as "^x" mean the single
+   ASCII character ctrl-x.  For example, ^A means ctrl-A, which displays
+   on the screen as a "smiling face".  In order to enter these
+   characters you must use an editor which allows the entry of control
+   characters into the text.  Many editors will allow such characters
+   through entries made on the numeric keypad; for example to enter the
+   ^A character, which has the value 01, you would hold down the Alt
+   key, type a "1" on the numeric keypad, and release the Alt key.  If
+   you have trouble entering control characters consult your editor
+   documentation.
+
+   The special characters you can embed in the text are:
+
+      ^A (01, smiling face), ^B (02, reverse smiling face), ^C (03,
+      heart):  Change the color of the displayed text.
+
+           These characters change the color of the displayed text to
+           one of the three possible special colors.  These are referred
+           to as the "headings", "options", and "warnings" colors when
+           using HELPCFG.EXE.  The text is displayed in the specified
+           color until the character is encountered a second time, when
+           the display reverts to the previous color.  Color changes can
+           be nested up to six levels deep.
+
+      ^D (04, diamond), ^E (05, club):  Specify a cross-reference.
+
+           These characters are used to enclose both the text that
+           refers to a topic elsewhere in the file, and the number of
+           that topic.  The format is:
+
+                 ^Dnnnn^Etext^E
+
+           where "nnnn" is the (decimal) topic number for the cross-
+           reference, and "text" is the text which should be displayed
+           for the cross-reference.  For example, to cross-reference the
+           word "MOUSE" to topic 103, use the sequence:
+
+                 ^D103^EMOUSE^E
+
+           When the help display is on the screen each cross-reference
+           item is displayed in the "unselected cross-reference" color
+           specified in HELPCFG.  In addition one item is displayed in
+           the "selected cross-reference" color.  If the user types a
+           carriage return the display switches to the topic number
+           specified in the selected item; the horizontal and vertical
+           arrow keys can be used to change which cross-reference item
+           is selected.
+
+           A cross-reference item can span a line break if you wish.
+
+      ^F (06, spade):  Used internally by the !INDENT directive.
+
+           Do NOT use this character in your text, or your display will
+           not work.  Use a ^X escape character (see below) before any
+           literal ^F you want embedded in the help text.
+
+      ^H (08, reverse dot):  Enter an ASCII character in numeric form.
+
+           This character allows you to enter any character into the
+           text, including characters that normally have other meanings
+           such as the EOF character (^Z), or one of the embedded
+           characters described here.  For example, to enter a ^Z (ASCII
+           value 26) in the text use:
+
+                 ^H26^H
+
+           This character will appear as a right-pointing arrow when the
+           help text is displayed on screen.
+
+      ^X (24, up-arrow):  Suppress the normal meaning of the following
+      character.
+
+           ^X allows you to insert characters in the text that would
+           otherwise have special meaning to 4MAKE or 4HELP.EXE.  The
+           characters that need to be entered in this way include ^X
+           itself, all of the other special characters listed above, and
+           LF (10), VT (11), FF (12), CR (13), SO (14), and SI (15).
+           Characters entered between ^Fs may be preceded with a ^X; in
+           this case the ^X applies to the character entered between the
+           ^Fs, and not to the first ^F. For example,
+
+                 ^X^F10^F
+
+           enters the character with ASCII value 10 (LF) into the help
+           text, and suppresses its normal end-of-line meaning, causing
+           the character to be displayed as a graphic symbol (it appears
+           as a reverse-video circle).  For further examples of the use
+           of ^X, see the ASCII table in 4DOS.TXT.
+
+
+Control Directives
+------------------
+
+   Control directives begin with an exclamation point in column 1.  They
+   are used to control text formatting and topic indexing.  In the list
+   below items shown in brackets are optional.  The control directives
+   are:
+
+      !WIDTH width
+
+           !WIDTH sets the display width.  This width includes the
+           border on each side of the screen and a space on the inside
+           of the border, so the actual text area will be (width - 4)
+           columns.  Text will be word-wrapped at this width unless the
+           !LINE directive is used.  The !WIDTH directive must appear
+           first in the help file.
+
+      !FIRST number
+
+           !FIRST assigns the help topic that will be displayed when
+           help is first called.  If this directive is not set, or if
+           the topic number is zero, the index will be displayed
+           initially.
+
+           If used, this directive must appear before the first !TOPIC
+           directive.
+
+      !EXTERNAL name
+
+           !EXTERNAL assigns the name of the program that will be called
+           to display external DOS help when the <F4> key is pressed
+           from the help screen.
+
+           This directive must appear before the first !TOPIC directive.
+
+      !KEYS number
+
+           !KEYS allows you to assign the help topic that will be called
+           to display a list of the help keys when the <F3> key is
+           pressed from the help screen.
+
+           This directive must appear before the first !TOPIC directive.
+
+      !TOPIC number [=number] [name]
+
+           !TOPIC must be located at the beginning of each help topic.
+           All the other directives below are used within the help text
+           for each topic.
+
+           Each topic must be assigned a unique topic number.  These
+           numbers must be greater than zero, and are normally assigned
+           in ascending numerical order.  Gaps of any significant size
+           in the numbering sequence should be avoided as they will
+           unnecessarily increase the size of the help file.
+
+           The name given is used at the top of the help text display,
+           and in the index if the topic is indexed.  It may contain
+           spaces, punctuation, etc.  The total space for topic names is
+           determined by multiplying the length of the longest name used
+           by the number of topics in the file, and may not exceed
+           65,536 characters.
+
+           Duplicate topic names are allowed (though in most cases only
+           one topic with the same name should be part of the index).
+           If you access the help system with a HELP [topicname]
+           command, and the name is a duplicate, the first entry in the
+           help text will be the one found.  To override this, use a ^X
+           escape character as the first character in the topic name.
+           This character will be used in name matching, preventing the
+           topics on which it is used from matching the search, but it
+           will not be displayed.  For an example, see the Alias .INI
+           directive and the ALIAS command in the 4DOS.TXT file.  The ^X
+           is used on the .INI directive's !TOPIC line, so that HELP
+           ALIAS will bring up help for the command instead.  (If the
+           ALIAS command were in the file before the Alias directive,
+           this would not be necessary.)
+
+           To equate a topic to another topic in the help file include
+           an =NN after the topic number, where NN is the topic
+           containing the information ("target topic").  There must be a
+           space after the topic number and before the =NN.  No
+           information should be entered for an equated topic other than
+           the !TOPIC directive.  The equated topic will appear in the
+           index and its name will appear at the top of the display
+           screen, but the text shown will be the text for the target
+           topic.  4MAKE will display an error message if the target
+           topic does not exist.  Equates can refer to a topic defined
+           earlier or later in the help text file, but may not be
+           nested.  For an example, see the ERASE command in 4DOS.TXT,
+           which is equated to DEL.
+
+           The help text for the topic begins on the first line after
+           the !TOPIC directive that does not contain another directive.
+           A topic continues until another !TOPIC directive is found or
+           the end of the file is reached.
+
+      !INDEX number
+
+           !INDEX allows you to change the normal alphabetical order of
+           help index entries.  It must appear on the line following the
+           !TOPIC directive.  If no !INDEX directive is used the topic
+           is assigned an index number of 7777 hex (30583 decimal).
+           This results in the following sort order in the help index:
+
+                 topics with an index number < 30583
+                 topics with no specified index number
+                 topics with an index number > 30583
+
+           Within each group the topics are sorted in alphabetical order
+           by topic name.  Do not use the value 65535 (FFFF hex) as an
+           index value as it will disable indexing of the topic.
+
+      !NOINDEX
+
+           !NOINDEX excludes the specified topic from the help index.
+           It must appear on the line following the !TOPIC directive.
+           When !NOINDEX is used the topic will be accessible only
+           through a cross-reference.  Most of the topics in the version
+           5.51 4DOS.TXT file are !NOINDEX topics.
+
+      !LINE
+
+           !LINE forces a line break.  This disables automatic word wrap
+           between the line before the directive and the line after it.
+           Line breaks will be inserted automatically whenever a line is
+           entirely blank, or begins with one or more spaces, so no
+           !LINE directive is needed in these cases.
+
+      !INDENT l s f r
+
+           !INDENT indents the following block of text (until the next
+           !INDENT directive).  It should be followed by four numbers:
+
+                 l    Left indent in characters.  The following text
+                      will be indented this many characters from the
+                      left edge of the display window when it is
+                      displayed.  Word wrapping takes the indent into
+                      account.
+
+                 s    Skip width in characters.  4MAKE skips the first s
+                      characters when reading input lines.  This allows
+                      you to indent lines in the help text for
+                      readability, without disabling line wrap as
+                      indented input text usually does.
+
+                 f    First line indent in characters.  The first line
+                      of each paragraph is indented this far from the
+                      left edge of the display window.
+
+                 r    Right indent in characters.  The following text
+                      will be indented this many characters from the
+                      right edge of the display window when it is
+                      displayed.
+
+           All values default to 0 at the start of the file.  To return
+           all values to the default use !INDENT 0 (only a single "0" is
+           needed).  The indent values are NOT reset to 0 at the start
+           of a topic, so don't forget to use a !INDENT 0 to clear them!
+           All indents are taken into account for word wrapping.
+
+           For examples of how !INDENT is used see the options
+           (switches) for any command.
+
+      !TTY, !ENDTTY
+
+           The !TTY directive controls which portions of a help topic
+           appear when that topic is invoked from 4HELP.EXE with a /?
+           command line switch (which tells 4HELP to send the topic text
+           directly to the screen).  !TTY is used to signal the start
+           and the end of a block of !TTY output -- it simply toggles
+           whether a particular section of the text is output when /? is
+           used.  !ENDTTY is equivalent to !TTY, and can be used at the
+           end of a block to improve the readability of the text if you
+           wish (the distributed help text does not use this method).
+           Any number of !TTY and !ENDTTY marks may appear within a help
+           topic; the only restriction is that each must appear on a
+           line by itself.  These directives have no effect on a topic's
+           appearance within the regular 4HELP display.  Most of the
+           help topics in 4DOS.TXT have !TTY markers in them.
+
+      !TTYONLY
+
+           In some cases, you may wish to have special help text that
+           appears ONLY when text is sent directly to the screen with
+           4HELP's /? option.  For this purpose, you may use !TTYONLY
+           and append new text after the main body of help text.  All
+           text following !TTYONLY (to the end of the topic) will appear
+           only when 4HELP.EXE is invoked with the topic name and the /?
+           switch.  It is important to remember that 4HELP's normal
+           full-screen help display treats !TTYONLY the same as a topic
+           end, and will not display anything following !TTYONLY.
+
+
+Error Messages
+--------------
+
+   4MAKE reports a number of possible errors.  The error messages and
+   their meanings are:
+
+      Disk I/O problems:  A disk I/O error has occurred.  Check that
+      disk drive doors are closed and that there is sufficient space for
+      the output file.
+
+      Topic name array exceeds 64K:  Use shorter topic names or reduce
+      the number of topics in the help file.
+
+      Insufficient memory:  There isn't enough memory for 4MAKE's
+      temporary storage.  Free some memory and run 4MAKE again.
+
+      File index array exceeds 64K:  There are more than 10000 topics in
+      the help index.  Reduce the number of topics.
+
+      No help topics specified:  4MAKE couldn't find any !TOPIC
+      directives in the input file.
+
+      Invalid cross-reference topic number:  The number after the ^D in
+      a cross-reference entry is invalid.
+
+      Invalid width, Invalid item, Invalid index, Invalid topic, Invalid
+      equated topic number, Invalid indent:  The number following a help
+      directive is invalid.
+
+      Duplicate help topic number:  The same topic number was assigned
+      to more than one topic.  Help topic numbers must be unique.
+
+      WIDTH statement must precede first topic:  The !WIDTH directive
+      must be the first item in the help file.
+
+      INDEX statement must follow TOPIC statement:  The !INDEX directive
+      must immediately follow the !TOPIC directive.
+
+      Text in skip area:  The last !INDENT directive specified a skip
+      width but 4MAKE found text in the skip area (the first "s"
+      characters of the line).  Generally this indicates mistaken
+      indentation in the text, or an error in the !INDENT directive.
+      This is a warning and will not stop help file compilation.
+
+      Unrecognized directive:  The first column of a line contains an
+      exclamation point but the text that follows is not a valid
+      directive.
+
+      Invalid equate, target topic not defined:  You have attempted to
+      equate one topic to another using "!TOPIC n1 =n2" but the target
+      topic (n2) is not defined in the help file.
+

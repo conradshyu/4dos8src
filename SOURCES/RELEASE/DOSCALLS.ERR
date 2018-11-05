@@ -1,0 +1,23 @@
+..\4dos.h(66): Error! E1100: Definition of macro '_SH_DENYNO' not identical to previous definition
+..\4dos.h(67): Error! E1100: Definition of macro '_SH_DENYWR' not identical to previous definition
+..\4dos.h(68): Error! E1100: Definition of macro '_SH_COMPAT' not identical to previous definition
+..\doscalls.c(465): Warning! W131: No prototype found for function '_stackavail'
+..\doscalls.c(761): Warning! W124: Comparison result always 1
+..\doscalls.c(1059): Error! E1063: Missing operand
+..\doscalls.c(1059): Warning! W111: Meaningless use of an expression
+..\doscalls.c(1059): Error! E1009: Expecting ';' but found 'else'
+..\doscalls.c(1061): Error! E1063: Missing operand
+..\doscalls.c(1061): Warning! W111: Meaningless use of an expression
+..\doscalls.c(1061): Error! E1009: Expecting ';' but found 'else'
+..\doscalls.c(1111): Error! E1011: Symbol 'dos_3' has not been declared
+..\doscalls.c(1290): Error! E1011: Symbol 'true_bye' has not been declared
+..\doscalls.c(1295): Warning! W118: Label 'true_bye' has been defined but not referenced
+..\doscalls.c(1382): Error! E1011: Symbol 'old_func' has not been declared
+..\doscalls.c(1662): Warning! E1181: Parameter 2, sign specifier mismatch
+..\doscalls.c(1662): Note! I2003: source conversion type is 'int *'
+..\doscalls.c(1662): Note! I2004: target conversion type is 'unsigned int *'
+..\doscalls.c(1662): Note! I2002: '_dos_getfileattr' defined in: C:\WC\H\dos.h(186)
+..\doscalls.c(1687): Warning! E1181: Parameter 2, sign specifier mismatch
+..\doscalls.c(1687): Note! I2003: source conversion type is 'int *'
+..\doscalls.c(1687): Note! I2004: target conversion type is 'unsigned int *'
+..\doscalls.c(1687): Note! I2002: '_dos_getfileattr' defined in: C:\WC\H\dos.h(186)

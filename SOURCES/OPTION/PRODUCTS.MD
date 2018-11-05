@@ -1,0 +1,33 @@
+Prod     Def Prod  Make     Target         Env    Obj    Typ  Brand  Family  EnvFile
+----     --------  -------- ------------   ---    ---    ---  -----  ------  -------
+4dos     4dos      4dos     4dos.com       dos    dos    exe    Y      BP    none
+4dosrt   4dos      4dos     4dosrt.exe     w32    dsr    exe    Y      RT    none
+4dos     4dos      kstack   kstack.com     dos    dos    com    N      BP    none
+4dos     4dos      option   option.exe     dos    dos    exe    N      BP    none
+option   4dosopt   option   option.exe     dos    dos    exe    N      BP    optenv
+4os2     4os2      4os2     4os2.exe       os2    os2    exe    Y      BP    none
+4os2rt   4os2      4os2     4os2rt.exe     os2    o2r    exe    Y      RT    none
+4os2     4os2      option2  option2.exe    os2    os2    exe    N      BP    none
+4os2     4os2      jpos2dll jpos2dll.dll   os2    os2    dll    N      BP    none
+4os2     4os2      keystack keystack.exe   os2    os2    exe    N      BP    none
+4os2     4os2      shralias shralias.exe   os2    os2    exe    N      BP    none
+4nt      4nt       4nt      4nt.exe        nt     nt     exe    Y      BP    none
+4ntrt    4nt       4nt      4ntrt.exe      nt     ntr    exe    Y      RT    none
+4nt      4nt       shralsnt shralsnt.exe   nt     nt     exe    N      BP    none
+tcmd16   tcmd16    tcmd16   tcmd.exe       w16    w16    exe    Y      BP    none
+tcmd16   tcmd16    tc16dll  tc16dll.dll    w16    w16    dll    N      BP    none
+tcmd32   tcmd32    tcmd32   tcmd32.exe     w32    w32    exe    Y      BP    none
+tcmd32   tcmd32    tc32dll  tc32dll.dll    w32    w32    dll    N      BP    none
+tcmd32   tcmd32    shralsnt shralsnt.exe   nt     nt     exe    N      BP    none
+tcmd32rt tcmd32    tcmd32   tcmd32rt.exe   w32    w3r    exe    Y      RT    none
+tcmdos2  tcmdos2   tcmdos2  tcmdos2.exe    pm     pm     exe    Y      BP    none
+tcmdos2  tcmdos2   jpos2dll jpos2dll.dll   os2    os2    dll    N      BP    none
+tcmdos2  tcmdos2   keystack keystack.exe   os2    os2    exe    N      BP    none
+tcmdos2  tcmdos2   shralias shralias.exe   os2    os2    exe    N      BP    none
+br4dos   4dos      br4dos   br4dos.exe     dos    dos    exe    N      BP    none
+br4os2   4os2      br4os2   br4os2.exe     os2    os2    exe    N      BP    none
+br4nt    4nt       br4nt    br4nt.exe      nt     nt     exe    N      BP    none
+brtc16   tcmd16    brtc16   brtc16.exe     w16    w16    exe    N      BP    none
+brtc32   tcmd32    brtc32   brtc32.exe     w32    w32    exe    N      BP    none
+brtcos2  tcmdos2   brtcos2  brtcos2.exe    pm     pm     exe    N      BP    none
+

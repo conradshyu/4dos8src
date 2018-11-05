@@ -1,0 +1,666 @@
+1 Table of Contents
+1001 =31  Cmd Line
+1002 =71  File Sel
+1003 =47  Dir Nav
+1004 =46  Other Feat
+1005 =592 Commands
+1006 =101 Aliases
+1007 =102 Batch File
+1008 =131 Environ
+1009 =161 Variables
+1010 =241 Functions
+1011 =351 4DOS.INI
+1012 =352 Startup
+1013 =711 What's New
+1014 =719 Errors
+1015 =751 Compat
+1017 =720 Support
+1018 =12  Help Sys
+1019 =16  DOS Help
+1020 =941 File Sys
+1021 =891 Reference
+1022 =911 Codes
+1024 =971 Glossary
+1025 =11  Copyright
+11 Copyright and Version
+12 The 4DOS Help System
+13 Help Keys
+14 Help Reference
+15 Using the Mouse
+16 External Help
+17 OPTION Dialog Keys
+18 OPTION Reference
+1050 =17  OPTKEYS
+1051 =18  OPTHELP
+31 Using the Command Line
+32 Command-Line Editing
+33 Command History and Recall
+34 Command History Window
+1206 Command Names and Parameters
+35 Filename/Variable Completion
+36 Appending Backslashes to Directory Names
+37 Customizing Filename Completion
+38 Filename Completion Window
+39 Automatic Directory Changes
+40 Directory History Window
+41 Multiple Commands
+42 Expanding and Disabling Aliases
+43 Command Line Help
+44 Command Line Length Limits
+45 Page and File Prompts
+46 Other Features
+47 Directory Navigation
+48 Extended Directory Searches
+49 CDPATH
+50 Redirection and Piping
+51 Redirection
+52 Piping
+53 Keystack
+54 Special Character Compatibility
+71 File Selection
+72 Extended Parent Directory Names
+73 Wildcards
+74 Ranges -- Date, Time, and Size Ranges
+75 Size Ranges
+76 Date Ranges
+77 Time Ranges
+78 File Exclusion Ranges
+79 Multiple Filenames
+80 Include Lists
+81 LFN File Searches
+82 Executable Extensions
+1207 @File Lists
+1208 Command Switches for File Selection
+83 Critical Errors
+84 Conditional Commands
+85 Command Grouping
+86 Escape Character
+101 Aliases
+102 Batch Files
+103 .BAT and .BTM Files
+104 Echoing in Batch Files
+105 Batch File Parameters
+106 Using Environment Variables
+107 Batch File Commands
+108 Interrupting a Batch File
+109 Automatic Batch Files
+110 Detecting 4DOS
+111 Using Aliases in Batch Files
+112 Debugging Batch Files
+113 Batch File String Processing
+114 Batch File Line Continuation
+115 Batch File Compression
+116 REXX Support
+117 Command Parsing
+118 Argument Quoting
+131 Using the Environment
+132 CMDLINE
+133 COLORDIR
+134 COMSPEC
+135 COPYCMD
+136 DIRCMD
+137 FILECOMPLETION
+138 PATH
+1204 PATHEXT
+139 PROMPT
+140 TEMP
+141 TEMP4DOS
+161 Internal Variables
+162 ?
+163 ??
+164 _?
+165 =
+166 +
+167 _4VER
+168 _ALIAS
+169 _ANSI
+170 _APMAC
+171 _APMBATT
+172 _APMLIFE
+173 _BATCH
+174 _BATCHLINE
+175 _BATCHNAME
+176 _BG
+177 _BOOT
+178 _CI
+225 _CMDPROC
+179 _CO
+180 _CODEPAGE
+181 _COLUMN
+182 _COLUMNS
+183 _COUNTRY
+184 _CPU
+185 _CWD
+186 _CWDS
+187 _CWP
+188 _CWPS
+189 _DATE
+190 _DAY
+191 _DISK
+192 _DNAME
+193 _DOS
+194 _DOSVER
+195 _DOW
+226 _DOWF
+196 _DOWI
+197 _DOY
+198 _DPMI
+199 _DV
+200 _ENV
+201 _FG
+202 _HLOGFILE
+203 _HOUR
+204 _KBHIT
+205 _KSTACK
+206 _LASTDISK
+207 _LOGFILE
+208 _MINUTE
+209 _MONITOR
+210 _MONTH
+211 _MOUSE
+212 _NDP
+213 _ROW
+214 _ROWS
+215 _SECOND
+216 _SHELL
+217 _SWAPPING
+218 _SYSERR
+219 _TIME
+220 _TRANSIENT
+221 _VIDEO
+222 _WIN
+223 _WINTITLE
+224 _YEAR
+241 Variable Functions
+242 @ALIAS
+333 @ABS
+334 @ALTNAME
+243 @ASCII
+244 @ATTRIB
+245 @CDROM
+246 @CHAR
+247 @CLIP
+335 @CLIPW
+248 @COMMA
+249 @CONVERT
+250 @DATE
+251 @DAY
+252 @DEC
+336 @DECIMAL
+253 @DESCRIPT
+254 @DEVICE
+337 @DIGITS
+255 @DISKFREE
+256 @DISKTOTAL
+257 @DISKUSED
+258 @DOSMEM
+259 @DOW
+338 @DOWF
+260 @DOWI
+261 @DOY
+262 @EMS
+339 @ERRTEXT
+263 @EVAL
+264 @EXEC
+265 @EXECSTR
+266 @EXPAND
+267 @EXT
+268 @EXTENDED
+269 @FILEAGE
+270 @FILECLOSE
+271 @FILEDATE
+272 @FILENAME
+273 @FILEOPEN
+274 @FILEREAD
+275 @FILES
+276 @FILESEEK
+277 @FILESEEKL
+278 @FILESIZE
+279 @FILETIME
+280 @FILEWRITE
+281 @FILEWRITEB
+282 @FINDCLOSE
+283 @FINDFIRST
+284 @FINDNEXT
+285 @FORMAT
+286 @FULL
+287 @IF
+288 @INC
+289 @INDEX
+340 @INIREAD
+341 @INIWRITE
+290 @INSERT
+291 @INSTR
+292 @INT
+293 @LABEL
+294 @LEFT
+295 @LEN
+296 @LFN
+297 @LINE
+298 @LINES
+299 @LOWER
+300 @LPT
+301 @MAKEAGE
+302 @MAKEDATE
+303 @MAKETIME
+304 @MASTER
+342 @MAX
+343 @MIN
+305 @MONTH
+306 @NAME
+307 @NUMERIC
+308 @PATH
+309 @RANDOM
+310 @READSCR
+311 @READY
+312 @REMOTE
+313 @REMOVABLE
+314 @REPEAT
+315 @REPLACE
+316 @RIGHT
+317 @SEARCH
+318 @SELECT
+319 @SFN
+320 @STRIP
+321 @SUBSTR
+322 @TIME
+323 @TIMER
+324 @TRIM
+325 @TRUENAME
+326 @UNIQUE
+327 @UPPER
+328 @WILD
+329 @WORD
+330 @WORDS
+331 @XMS
+332 @YEAR
+351 4DOS.INI
+352 Starting 4DOS
+353 Modifying the .INI File
+354 Using the .INI File
+355 .INI File Sections
+356 .INI File Directives
+357 .INI File Examples
+371 Initialization Directives
+372 4StartPath
+373 Alias
+374 AutoExecParms
+375 AutoExecPath
+376 DirHistory
+377 Environment
+378 EnvFree
+379 HelpOptions
+380 HelpPath
+381 History
+382 INIQuery
+383 InstallPath
+384 LocalAliases
+385 LocalDirHistory
+386 LocalHistory
+387 PauseOnError
+388 REXXPath
+389 Swapping
+390 TreePath
+391 UMBAlias
+392 UMBDirHistory
+393 UMBEnvironment
+394 UMBHistory
+395 UMBLoad
+396 Configuration Directives
+411 AmPm
+412 ANSI
+413 AppendToDir
+414 BatchEcho
+415 BeepFreq
+416 BeepLength
+417 CDDWin Directives
+418 CommandSep
+472 CompleteHidden
+419 CursorIns
+420 CursorOver
+421 DecimalChar
+422 DescriptionMax
+423 DescriptionName
+424 Descriptions
+425 EditMode
+426 EscapeChar
+427 EvalMax
+428 EvalMin
+429 FileCompletion
+430 FuzzyCD
+431 HistCopy
+432 HistLogName
+433 HistMin
+434 HistMove
+435 HistWrap
+436 LineInput
+1203 ListRowStart
+473 LogErrors
+437 LogName
+474 Mouse
+438 NoClobber
+439 ParameterChar
+1201 PathExt
+440 PopupWin Directives
+441 Printer
+442 ScreenColumns
+443 ScreenRows
+444 TabStops
+445 ThousandsChar
+1202 UnixPaths
+446 UpperCase
+447 Win95SFNSearch
+448 Color Directives
+461 BrightBG
+462 CDDWinColors
+463 ColorDir
+465 InputColors
+466 ListboxBarColors
+467 ListColors
+468 ListStatBarColors
+464 PopupWinColors
+469 SelectColors
+470 SelectStatBarColors
+471 StdColors
+481 Key Mapping Directives
+482 Backspace
+483 BeginLine
+484 Del
+485 DelToBeginning
+486 DelToEnd
+487 DelWordLeft
+488 DelWordRight
+489 Down
+490 EndLine
+491 EraseLine
+492 ExecLine
+493 Ins
+494 Left
+495 NormalKey
+496 Right
+497 Up
+498 WordLeft
+499 WordRight
+511 AddFile
+512 AliasExpand
+513 CommandEscape
+514 DelHistory
+515 EndHistory
+516 Help
+517 LFNToggle
+518 LineToEnd
+519 NextFile
+520 NextHistory
+521 NormalEditKey
+522 PopFile
+523 PrevFile
+524 PrevHistory
+551 RepeatFile
+525 SaveHistory
+531 DirWinOpen
+532 HistWinOpen
+533 NormalPopupKey
+534 PopupWinBegin
+535 PopupWinDel
+536 PopupWinEdit
+537 PopupWinEnd
+538 PopupWinExec
+539 ListExit
+540 ListFind
+541 ListFindReverse
+542 ListHex
+543 ListHighBit
+544 ListInfo
+545 ListNext
+546 ListPrevious
+547 ListPrint
+548 ListWrap
+549 NormalListKey
+550 Advanced Directives
+561 ClearKeyMap
+562 CritFail
+563 Debug
+564 DiskReset
+565 DVCleanup
+566 FullINT2E
+567 Include
+568 Inherit
+569 MessageServer
+570 NetwareNames
+571 NextINIFile
+572 OutputBIOS
+573 SDFlush
+574 StackSize
+575 SwapReopen
+576 UniqueSwapName
+577 Win95LFN
+578 =373 _Alias_
+579 =381 _History_
+580 =389 _Swapping_
+581 =412 _ANSI_
+582 =428 _EvalMin_
+583 =427 _EvalMax_
+584 =429 _FileCompletion_
+585 =376 _DirHistory_
+586 =377 _Environment_
+591 Commands
+592 Commands by Category
+593 Commands by Name
+594 ?
+595 ALIAS
+596 ATTRIB
+597 BEEP
+598 BREAK
+599 CALL
+600 CANCEL
+601 CD
+602 CDD
+603 CHCP
+604 CLS
+605 COLOR
+606 COPY
+607 CTTY
+608 DATE
+609 DEL
+610 DELAY
+611 DESCRIBE
+612 DIR
+613 DIRHISTORY
+614 DIRS
+615 DO
+616 DRAWBOX
+617 DRAWHLINE
+618 DRAWVLINE
+619 ECHO
+620 ECHOS
+621 ENDLOCAL
+622 ESET
+623 EXCEPT
+624 EXIT
+625 FFIND
+626 FOR
+627 FREE
+628 GLOBAL
+629 GOSUB
+630 GOTO
+631 HELP
+632 HISTORY
+633 IF
+634 IFF
+635 INKEY
+636 INPUT
+637 KEYBD
+638 KEYSTACK
+687 LFNFOR
+639 LH
+640 LIST
+641 LOADBTM
+642 LOCK
+643 LOG
+644 MD
+645 MEMORY
+646 MOVE
+647 ON
+648 OPTION
+649 PATH
+650 PAUSE
+651 POPD
+652 PROMPT
+653 PUSHD
+654 QUIT
+655 RD
+656 REBOOT
+657 REM
+658 REN
+659 RETURN
+660 SCREEN
+661 SCRPUT
+662 SELECT
+663 SET
+664 SETDOS
+665 SETLOCAL
+666 SHIFT
+667 START
+668 SWAPPING
+669 SWITCH
+670 TEE
+671 TEXT
+672 TIME
+673 TIMER
+674 TOUCH
+675 TREE
+676 TRUENAME
+677 TYPE
+678 UNALIAS
+679 UNLOCK
+680 UNSET
+681 VER
+682 VERIFY
+683 VOL
+684 VSCRPUT
+685 WHICH
+686 Y
+688 =601 CHDIR
+689 =619 ECHOERR
+690 =620 ECHOSERR
+691 =609 ERASE
+692 =639 LOADHIGH
+693 =644 MKDIR
+694 =655 RMDIR
+695 =658 RENAME
+711 What's New?
+712 What's New:  General Features
+713 What's New:  Command Line Editing
+714 What's New:  Command Changes
+715 What's New:  Variables and Functions
+716 What's New:  Startup and Configuration
+718 What's New:  Bugs Fixed
+719 Error Messages
+720 Troubleshooting, Service, and Support
+731 Technical Support
+732 Contacting JP Software
+751 Compatibility
+752 Troubleshooting Compatibility Problems
+753 Path Length
+754 Environment Size
+755 Testing for Interactions
+756 Memory Allocation Conflicts
+757 Memory Allocation and Microsoft Windows
+758 Advanced Configuration Options
+761 DOS
+762 Running 4DOS along with COMMAND.COM
+763 Executing DOS Commands from Applications
+764 APPEND
+765 DBLSPACE and DRVSPACE
+766 FASTOPEN
+767 FORMAT /S and SYS Commands
+769 MEMMAKER
+770 DOS MOVE Command
+771 DOS SELECT Command
+772 SMARTDRV Disk Cache
+773 DR DOS / Novell DOS (Novell)
+781 Microsoft Windows 3.x
+791 Windows 95/98
+792 The Windows 95/98 Boot Sequence
+793 4DOS as the Primary Shell Under Win95/98
+794 Starting 4DOS From Windows 95/98/ME
+795 Installing KSTACK in Windows 95/98/ME
+796 Using "MS-DOS Mode"
+811 IBM OS/2
+812 Configuring 4DOS for OS/2
+813 Settings for DOS Sessions
+814 Configuring DOS Sessions for 4DOS
+815 OS/2 DOS Sessions and 4DOS.INI
+816 OS/2 DOS Sessions and Startup Files
+817 "Temporary" VDMs
+818 4DOS and OS/2 Boot Management Options
+819 Resolving "Cannot find OSO001.MSG" Error
+821 Novell Netware
+822 Netware Diskless Workstations (Novell)
+841 Compatibility (Other Products)
+842 ANSI Drivers
+843 Swapping to RAM Disks
+844 4DOS and Other Command Line Editors
+845 4DOS and EXE File Compression Programs
+846 Mouse Compatibility with 4DOS HELP
+847 NDIS Network Drivers
+848 Programs Requiring Short PATH
+861 1DIR+ (Bourbaki)
+862 Bookshelf CD-ROM (Microsoft)
+863 DESQview (Quarterdeck)
+864 DOORWAY BBS Software
+865 Epsilon (Lugaru Software)
+866 FASTIO (Cyrix)
+867 FoxPro (Microsoft)
+868 Hijaak (Inset Systems)
+869 LapLink (Traveling Software)
+870 QEMM and QRAM (Quarterdeck)
+871 RoboComm Communications Software
+872 Software Carousel (SoftLogic Solutions)
+873 Stacker (Stac Electronics)
+874 SuperStor (AddStor, Novell)
+875 TSRCOM Utilities (TurboPower Software)
+876 UltraVision (Personics)
+877 XyWrite (XyQuest / The Technology Group)
+891 Miscellaneous Reference Information
+892 Colors and Color Names
+893 Keys and Key Names
+894 Popup Windows
+895 Executable Files and File Searches
+896 How 4DOS Uses Memory
+897 Upper Memory Blocks (UMBs)
+911 ASCII and Key Codes
+912 ASCII Tables
+913 Key Code and Scan Code Tables
+914 Key Codes and Scan Codes Explanation
+915 ANSI Commands
+941 File Systems and File Name Conventions
+942 Drives and Volumes
+943 File Systems
+944 Directories and Subdirectories
+945 File Names
+946 File Attributes and Time Stamps
+971 Glossary
+972 Glossary - 4
+973 Glossary - A
+974 Glossary - B
+975 Glossary - C
+976 Glossary - D
+977 Glossary - E
+978 Glossary - F
+979 Glossary - G
+980 Glossary - H
+981 Glossary - I
+982 Glossary - K
+983 Glossary - L
+984 Glossary - M
+985 Glossary - N
+986 Glossary - O
+987 Glossary - P
+988 Glossary - R
+989 Glossary - S
+990 Glossary - T
+991 Glossary - U
+992 Glossary - V
+993 Glossary - W
+994 Glossary - X

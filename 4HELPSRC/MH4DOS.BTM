@@ -1,0 +1,4 @@
+4make
+..\tools\sharinit
+copy 4dos.hlp 4help.exe ..\
+? in ..\ 4help

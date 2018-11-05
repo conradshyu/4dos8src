@@ -1,0 +1,545 @@
+
+@echo off
+:: chessboard prog. version 1.1
+:: 2001 by Jasen Betts
+:: fidonet 3:640/531.42   email jasen_betts@yahoo.com.au
+
+if not "%1" == "#!#" goto spawn_4dos
+
+option //normalkey=f3
+option //normaleditkey=f3
+*unalias *
+loadbtm on
+
+rem set display mode (uncomment as apropriate)
+
+iff %_columns lt 80  .or. %_rows lt 43  then
+    ::
+:: insert screen mode command here!
+::
+stm 80x43x9
+rem  mode con: cols=80 lines=43
+  iff %_columns lt 80  .or. %_rows lt 43 then
+        do while %_columns lt 80  .or. %_rows lt 43
+          input enter command to set screen to 80x43 or larger,%=
+ quit to cancel %=n%=> %%c
+      %c
+    enddo
+    cls
+    echo %=> %c
+    pause you can insert the above command near line %@eval[%_batchline %=
+         -11] of %_batchname to avoid the %=> prompt next time.  (any key)
+  endiff
+endiff
+cls
+
+unset *
+setdos /b0
+setdos /b1
+
+set total_env=%_env
+
+alias bad_move=(screen 17 0 %=%+echo %=`               %=`%=
+%=%+ screen 17 0 %=%& %=%+ goto get_move)
+alias @f4=edit
+alias @esc=quit%=r
+alias @pgup=undo%=r
+alias @pgdn=redo%=r
+alias @f1=help%=r
+alias @f2=redraw%=r
+alias @alt-r=restart%=r
+alias @shift-f2=status%=r
+set status=rem
+
+gosub open_file
+gosub read_move
+
+:redraw
+screen 0 0
+text
+valid commands:
+
+resign
+quit       (esc)
+restart  (alt-r)
+undo      (pgup)
+redo      (pgdn)
+redraw      (f2)
+help        (f1)
+edit        (f4)
+endtext
+
+drawbox 0 16 41 73 2 7 on 8
+
+for x in (0 3 6 1 4 7 2 5) do (
+      scrput 0 %@eval[%x*7+20] 1 on 14 %@char[%@eval[%x+65]]
+  scrput 41 %@eval[%x*7+20] 1 on 14 %@char[%@eval[%x+65]]
+  scrput %@eval[%x*5+3] 16 1 on 14 %@eval[8-%x]
+  scrput %@eval[%x*5+3] 73 1 on 14 %@eval[8-%x]
+)
+
+set x=4  %+ set y=4 %+ set x1=1
+do while %y lt 8
+        gosub showboard
+    if %x == %y  ( set y1=%@eval[ 0 - %x1 ] %+ set x1=0)
+    if %@eval[ (15 + %y1) / 2 - %y ] == %x ( set x1=%y1 %+ set y1=0)
+    set x=%@eval[%x+%x1]
+    set y=%@eval[%y+%y1]
+enddo
+
+:: ***** MAIN LOOP *****
+
+:: if you swap these two lines bugs appear... why?
+:get_move
+
+  set ep=
+
+  %status screen 31 0 env:%_env/%total_env
+  %status screen 32 0 move %move%/%fs%
+  %status screen 33 0 fh/fp %fh/%@fileseek[%fh,0,1]``
+  %status screen 34 0 %+ %status ver
+
+  screen 15 0 `(  -  )    `
+  screen 15 1  %lastmove
+  screen 20 0  %@if[%@eval[%move %% 2] ==1, Black's,White's]
+  screen 21,1 move:
+  screen 22 0 `[  -  ]    `
+  screen 22 1
+  input %%mov
+
+  if "%mov" == "" bad_move huh?
+  switch %mov
+      case debug
+                   set debug=%@if[ "%debug" == "1" ,,1]
+  case status
+                   iff "%status" == "" then
+                     for %%x in (31 32 33) (
+                        screen %%x 0
+                    echo `              `
+                    )
+                 set status=rem
+               else
+                     set status=
+               endiff
+  case quit .or. resign
+                   iff %@eval[%fs*80+80] ne %@fileseek[%fh,0,2] then
+                       set x=%@fileseek[%fh,-80,2]
+                   set x=%@filewriteb[%fh,8,*%fs       ]
+               endiff
+               gosub close_file
+               quit
+  case restart
+                   gosub close_file
+               del /q chess.dat
+               gosub open_file
+               gosub newboard
+               gosub update
+  case undo
+                   if %move lt 1 bad_move can't undo
+               set move=%@dec[%move]
+               gosub read_move
+               gosub update
+  case redo
+                   if %move ge %fs bad_move can't redo
+               set move=%@inc[%move]
+               gosub read_move
+               gosub  update
+  case redraw .or. refresh
+                   goto redraw
+  case help
+                   gosub help
+               goto redraw
+  default
+
+    if "%debug" ne "" setdos /y1
+
+    for x in (x0 y0 x1 y1) set %x=-1
+
+    set a=0
+    set b=0
+    do x = 1 to %@len[%mov]
+          set y=%@ascii[%@instr[%x,1,-%mov]]
+      set a=%@inc[%a]
+
+      if %a==3 set b=1
+      if %a==3 .and. %y == 45 iterate
+      if %y lt 49 bad_move invalid ordinate
+      if %y lt 58 (if %[y%b] ne -1 bad_move %+set y%b=%@eval[56-%y] %+iterate)
+      if %[x%b] ne -1 bad_move
+      if %y lt 65 bad_move invalid ordinate
+      if %y lt 73 ( set x%b=%@eval[%y-65] %+ iterate )
+      if %y lt 97 bad_move invalid ordinate
+      if %y lt 105 ( set x%b=%@eval[%y-97] %+ iterate )
+      bad_move invalid ordinate
+
+    enddo
+
+    for x in (x0 y0 x1 y1) do if %[%x] == -1 bad_move bad coord
+
+    :: hands off opponents pieces
+    set x=%@ascii[%[b%x0%%y0]]
+    if "%[b%x0%%y0]" == ""  bad_move nothing there
+    if %@eval[%move %% 2] ==0 .XOR. %x lt 95 bad_move not yours
+
+
+    :: can't capture own pieces
+    set y=%@ascii[%[b%x1%%y1]]
+    iff "%[b%x1%%y1]" == "" then
+          set lm=%x0 1%y0% 8 %x1 1%y1%
+    else
+          if %@eval[%move %% 2] ==0 .xor. %y gt 95 bad_move can't take own
+      set lm=%x0 1%y0% 9 %x1 1%y1%
+    endiff
+
+    :: move rules.... X's are letters, columns   Y's are numbers, rows.
+
+    set x=%@eval[%@if[%x1 gt %x0,%x1-%x0,%x0-%x1]]
+    set y=%@eval[%@if[%y1 gt %y0,%y1-%y0,%y0-%y1]]
+
+
+echo x=%x y=%y
+
+    switch %[b%x0%%y0]
+
+    case K
+             iff %x gt 1 then
+               if "%[m4%y0]" eq "" bad_move can't
+           if %y ne 0 bad_move can't
+           switch %x1
+               case 6
+                 if 0%@ascii[%[b7%y0]] ne 0%@eval[%@ascii[%[b4%y0]]+7] %=
+                bad_move stale
+             if "%[b5%y0]" ne "" .or. "%[b6%y0]" ne "" bad_move blocked
+             gosub move
+             set x0=7
+             set x1=5
+          case 1
+                 if 0%@ascii[%[b0%y0]] ne 0%@eval[%@ascii[%[b%x0%%y0]]+7] %=
+               bad_move stale
+           if "%[b3%y0]" ne "" .or. "%[b2%y0]" ne "" .or. "%[b1%y0]" ne "" %=
+             bad_move blocked
+             gosub move
+             set x0=0
+             set x1=2
+           default
+                 bad_move can't
+           endswitch
+           for j in (m4%y0 m0%y0 m7%y0) set %j=
+             else
+               if %@eval[ (%x * %x ) + (%y * %y) ] gt 3 bad_move too far
+           set m%x%%y=
+         endiff
+    case N
+             if %@eval[ %x ** 2 + %y ** 2 ] ne 5 bad_move can't
+    case Q
+             if %x ne %y goto rook_move
+         goto bishop_move
+    case P
+             if %@eval[%move %% 2] ==0 .xor. %y0 gt %y1 bad_move can't reverse
+         switch %y
+             case 1
+               switch %x
+               case 0
+                 if "%[b%x1%%y1]" ne ""  bad_move blocked
+           case 1
+                 iff "%x1%%y1%" == "%enpassant%" then
+                   set b%x1%%y0=
+               set lm=%x0 1%y0% 9 %x1 1%y1%
+               set x=%x1
+               set y=%y0
+               gosub showboard
+             else
+                   if "%[b%x1%%y1]" == "" bad_move nothing there
+             endiff
+           default
+                 bad_move can't
+           endswitch
+         case 2
+               if %x ne 0 bad_move can't
+           if %y0 ne 1 .and. %y0 ne 6 bad_move first step only
+           set ep=%x1%%@eval[ (%y1 + %y0)/2 ]
+           if "%[b%x1%%y1]" ne "" bad_move blocked
+           if "%[b%ep]" ne "" bad_move blocked
+         default
+               bad_move can't: too far
+         endswitch
+    case R
+        :rook_move
+         if %x0 ne %x1 .xor. %y0 == %y1 bad_move can't: crooked
+         set a= %x+%y
+         do z=1 to %@eval[ %x + %y - 1 ]
+               set x=%@eval[ %x0 + ( %x1 - %x0 ) / ( %a ) * %z]
+           set y=%@eval[ %y0 + ( %y1 - %y0 ) / ( %a ) * %z]
+           if "%[b%x%%y]" ne "" bad_move path blocked
+         enddo
+          set m%x%%y=
+    case B
+        :bishop_move
+         if %x ne %y bad_move diagonal only
+         set a=%x
+         do z=1 to %@eval[ %x - 1 ]
+               set x=%@eval[ %x0 + ( %x1 - %x0 ) / ( %a ) * %z]
+           set y=%@eval[ %y0 + ( %y1 - %y0 ) / ( %a ) * %z]
+           if "%[b%x%%y]" ne "" bad_move path blocked
+         enddo
+    endswitch
+
+    gosub move
+
+    set enpassant=%ep
+
+    set lastmove=
+    for x in (%lm) (
+     set lastmove=%lastmove%%@word[%x, A B C D E F G H - x 8 7 6 5 4 3 2 1 ])
+
+    gosub write_move
+  endswitch
+goto get_move
+
+
+
+:move
+:: [x0 y0 x1 y1]  moves piece and updates display
+set b%x1%%y1=%[b%x0%%y0]
+set b%x0%%y0=
+set x=%x0
+set y=%y0
+gosub showboard
+set x=%x1
+set y=%y1
+gosub showboard
+beep 3,3
+return
+
+:showboard
+:: [ x y ]  outputs a board cell to the display
+set p=%[b%x%%y%]
+set v%x%%y=%p
+goto showboard0
+:showboard2
+set p=%[b%x%y]
+set v%x%y=%p
+:showboard0
+set bg=%@eval[7+ (%x+%y) %% 2]
+set sx=%@eval[17 + %x * 7]
+set sy=%@eval[1 + %y * 5]
+set fg=%@if[ 0%@ascii[%p%] lt 96,15,0]
+switch %p
+    case p
+      scrput %sy %sx %fg on %bg `      ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg `  _   ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` (@)  ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg `  X   ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` /X\  `
+case r
+      scrput %sy %sx %fg on %bg `::::: ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg `\###/ ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` |#|  ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` |#|  ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg `/#O#\ `
+case q
+      scrput %sy %sx %fg on %bg ` .W.  ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` (@)  ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg `  X   ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg `  X   ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` /X\  `
+case k
+      scrput %sy %sx %fg on %bg `  +   ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` (@)  ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg `  H   ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg `  H   ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` /H\  `
+case b
+      scrput %sy %sx %fg on %bg `  o,  ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` (/)  ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` '%   ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg `  %   ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` /%\  `
+case n
+      scrput %sy %sx %fg on %bg `  _=  ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` /`%=`|  ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg `:/ |  ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` | |  ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx %fg on %bg ` /_\  `
+default
+      scrput %sy %sx 0 on %bg `      ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx 0 on %bg `      ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx 0 on %bg `      ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx 0 on %bg `      ` %+ set sy=%@inc[%sy]
+  scrput %sy %sx 0 on %bg `      `
+endswitch
+return
+
+
+:newboard
+:: sets up a new playing board,
+unset b??
+set b00=r %+set b10=n %+set b20=b %+set b30=q
+set b40=k %+set b50=b %+set b60=n %+set b70=r
+set b07=R %+set b17=N %+set b27=B %+set b37=Q
+set b47=K %+set b57=B %+set b67=N %+set b77=R
+set m00=0 %+set m07=0 %+set m70=0 %+set m77=0 %+set m47=0 %+set m40=0
+for x in (0 1 2 3 4 5 6 7) do ( set b%x1=p %+ set b%x6=P )
+    set move=-1
+set fs=-1
+set x=%@fileseek[%fh,0,0]
+set x=%@fileseek[%fh,0,1]
+set lastmove=START
+set enpasssant=
+:write_move
+if %fh lt 1 return
+for y in (0 1 2 3 4 5 6 7) for x in (0 1 2 3 4 5 6 7) (
+      set z=%@filewriteb[%fh,1,%[b%x%y]]
+  )
+for x in (00 40 70 07 47 77) set z=%@filewriteb[%fh,1,%[m%x]]
+
+set x=%@filewriteb[%fh,5,%lastmove        ]
+set x=%@filewriteb[%fh,3,%enpassant       ]
+set x=%@filewriteb[%fh,1,%@char[13]]
+set x=%@filewriteb[%fh,1,%@char[10]]
+set move=%@inc[%move]
+set fs=%move
+set x=%@filewriteb[%fh,0,]
+return
+
+:read_move
+
+set x=%@fileseek[%fh,%@eval[80*%move],0];
+if %fh lt 1 goto newboard
+set b00=%@fileread[%fh,1]
+
+if "%b00" == "**EOF**" goto newboard
+
+iff "%b00" == "*" then
+      set move=%@fileread[%fh,7]
+  gosub read_move
+  set fs=%move
+else
+
+  for x in (1 2 3 4 5 6 7) set b%x0=%@fileread[%fh,1]
+
+  for y in (1 2 3 4 5 6 7) for x in (0 1 2 3 4 5 6 7) (
+        set b%x%y=%@fileread[%fh,1]
+    )
+  for x in (00 40 70 07 47 77) set m%x=%@fileread[%fh,1]
+
+
+  set lastmove=%@fileread[%fh,5]
+  set enpassant=%@fileread[%fh,2]
+  set x=%@fileread[%fh,3]
+
+endiff
+return
+
+:open_file
+set fh=%@fileopen[chess.dat,append,b]
+set fs=%@eval[%@filesize[chess.dat]/80-1]
+if %fs ne %@int[%fs] set fs=0
+set move=%fs
+return
+
+:close_file
+set fh=%@fileclose[%fh]
+return
+
+
+:update  - update screen for an undo/redo etc.
+for x in (0 1 2 3 4 5 6 7) do for y in (0 1 2 3 4 5 6 7) do (
+        if "%@ascii[%[b%x%y]]" ne "%@ascii[%[v%x%y]]" gosub showboard2
+ )
+screen 17 0
+echo `               `
+return
+
+:help
+
+cls
+ctext
+              The alt.4dos chessboard batch    version 1.00
+
+How:
+      moves are made by entering to-from coodinate strings
+      letter-number order is non-critical and the hyphen is optional.
+      So A2A4,A2-a4,2a4a, and 2a-a4 would all do the same thing
+          This proram enforces all the normal chess rules except it doesn't
+      prohibit moves resulting in check for the mover. castling is done by
+      entering the command to move the king the rook will move automatically.
+      A short hint is given to explain why when a move is rejected
+          A number of command-words and hotkeys are also supported these are
+      listed on the screen
+         The game position of each move is saved in a file called chess.dat
+      which is created in the current direcctory so the game can be quit and
+      re-entered at a later time
+Who:
+      This progam was written by Jasen Betts with encouragement by people
+      in the als.4dos newgroup and the co-joined 4DOS fidonet echo.
+What:
+      this is free (gratis/libre) software and neccessarily open source, if
+      you produce a derived work  or re-use large sections of the code here
+      please credit the author.
+When:
+          This version was completed on the 16th of December 2001
+      future Updates depend on interest epressed.
+Where:
+      the author can be contacted at
+      the alt.4dos / 4DOS conferences    (fast)
+      fidonet 3:640/531.42               (fast)
+      email   jasen.betts@yahoo.com.au   (slow)
+Bugs:
+      As discusssed above some illegal moves involving check are allowed
+      this is currently considered too hard to fix.
+          This batch was developed for version 7 of 4dos and may not work with
+      later verions. it won't work with earlier versions.
+      corrupted chess.dat files can produce strange behavior
+          The display can be hard to read, turn up your contrast and adjust
+      your brightness controls or adjust the text-mode palette, try a
+      "black"er font.
+      Any other bugs or enhancements let me know.
+endtext
+pause  (almost) Any key to return to the game
+cls
+return
+
+:: due to bugs in 4dos 7.0 and option the only way to preserve the original
+:: 4dos config (aliases, keys) is to spawn a fresh instance, also code
+:: to locate 4dos in the event that the batch is run using command.com
+:: so be careful not to remove command.com compatibility from this code.
+:: this also has the effect of cleaning up ant 'dropped' file handles (like
+:: if you have to use break becase of a corrupted data file)
+
+:spawn_4dos
+
+ echo normalkey=esc   > %temp%\chess.ini
+ echo normalkey=pgup >> %temp%\chess.ini
+ echo normalkey=pgdn >> %temp%\chess.ini
+ echo normalkey=home >> %temp%\chess.ini
+ echo normalkey=up   >> %temp%\chess.ini
+ echo normalkey=f1   >> %temp%\chess.ini
+ echo normalkey=f2   >> %temp%\chess.ini
+ echo normalkey=f3   >> %temp%\chess.ini
+ echo normalkey=f4   >> %temp%\chess.ini
+
+%comspec% /c *exit %=%@eval[2+2]
+if errorlevel 4 if not errorlevel 5 goto comspec_4dos
+if not 4dos == 4DOS goto no_4dos
+:: search for 4dos
+if "%@search[4dos]" == "" goto search_fail
+
+:path_4dos
+4dos /e:700 @%temp%\chess.ini /c %0 #!#
+del %temp%\chess.ini > \dev\nul
+goto end_of_batch
+:comspec_4dos
+%comspec% /e:700 @%temp%\chess.ini /c %0 #!#
+del %temp%\chess.ini > \dev\nul
+goto end_of_batch
+:no_4dos
+4dos /c *exit %%@eval[2+2]
+if errorlevel 4 if not errorlevel 5 goto path_4dos
+:search_fail
+del %temp%\chess.ini > \dev\nul
+echo this program couldn't find 4dos (or anything like it)
+echo please ensure that comspec points to 4dos or that 4dos exists
+echo in the search path.
+
+:end_of_batch

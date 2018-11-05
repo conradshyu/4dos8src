@@ -1,0 +1,54 @@
+# Build the OPTION.EXE file for DOS
+
+# Define local rules etc.
+!include setup.wmk
+
+# Set up local macros and header list
+MIX=$(%TUI)\defaults.h $(%TUI)\field.h $(%TUI)\keyboard.h $(%TUI)\window.h &
+	$(%TUI)\help.h $(%TUI)\menu.h $(%TUI)\mouse.h $(%TUI)\controls.h &
+	$(%TUI)\winvars.h
+
+# Compile the C code
+
+$(%OBJ)\option.obj : option.c option.h general.h iniistr.h &
+	iniipar.h dialog.h iniio.h iniutil.h &
+	resource.h $(%COMMON)\product.h $(%COMMON)\build.h &
+	$(%COMMON)\inistruc.h $(%COMMON)\inifile.h
+
+ 
+$(%OBJ)\dialog.obj : dialog.c dialog.h general.h scrdef.h iniutil.h inirc.h &
+	$(MIX) resource.h $(%COMMON)\product.h $(%COMMON)\build.h &
+	$(%COMMON)\inifile.h 
+
+$(%OBJ)\argparse.obj : argparse.c argparse.h general.h iniutil.h &
+	resource.h $(%COMMON)\inistruc.h 
+
+$(%OBJ)\iniio.obj : iniio.c iniio.h general.h iniutil.h
+
+$(%OBJ)\iniutil.obj : iniutil.c iniutil.h general.h argparse.h &
+	$(%COMMON)\product.h 
+
+$(%OBJ)\scrdef.obj : scrdef.c scrdef.h general.h $(MIX)
+
+$(%OBJ)\iparse.obj : iparse.c iniipar.h general.h iniutil.h &
+	iniistr.h inikpar.h argparse.h &
+	resource.h $(%COMMON)\product.h $(%COMMON)\inistruc.h &
+	$(%COMMON)\inifile.h 
+
+$(%OBJ)\istring.obj : istring.c iniistr.h &
+	resource.h $(%COMMON)\product.h $(%COMMON)\inistruc.h &
+	$(%COMMON)\inifile.h 
+
+$(%OBJ)\kparse.obj : kparse.c inikpar.h general.h iniutil.h &
+	resource.h $(%COMMON)\product.h $(%COMMON)\inistruc.h &
+	$(%COMMON)\inifile.h 
+
+
+# Link the executable
+
+$(%LINKTARG) : $(%OBJ)\option.obj $(%OBJ)\dialog.obj $(%OBJ)\argparse.obj &
+               $(%OBJ)\iniio.obj $(%OBJ)\iniutil.obj $(%OBJ)\scrdef.obj &
+               $(%OBJ)\iparse.obj $(%OBJ)\istring.obj $(%OBJ)\kparse.obj
+   $(%link)
+   copy $(%LINKTARG) $(%LINKMAP) ..\
+

@@ -1,0 +1,7 @@
+setlocal
+inkey /k"YN" Renumber 4DOS.TXT to 4DOS.NEW (Y/N)? %%key
+if "%key" != "Y" quit
+awk -f topren1.awk 4dos.txt > 4dos.$$$
+awk -f topren2.awk 4dos.$$$ > 4dos.new
+endlocal
+

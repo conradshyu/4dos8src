@@ -1,0 +1,8 @@
+::Options for compiling OPTION.EXE for 4DOS
+set common=..
+set inc_dos=%watcom\h;%tui;%common
+set opt_c_dos=%opt_c_dos -zm
+set lib_dos=%watcom\lib286;%watcom\lib286\dos;%spontasm\sourcejp;%_masm\lib;%tui
+
+::if debug=Y set opt_c_dos=%opt_c_dos -dDEBUG
+set opt_c_debug=%opt_c_dos -dDEBUG

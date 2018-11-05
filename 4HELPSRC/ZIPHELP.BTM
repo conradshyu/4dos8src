@@ -1,0 +1,8 @@
+setlocal
+set pass=%@if["%1" == "b",-pass=Creo!Zebra,]
+alias hzip `del /qe %1.zip %+ touch /t%2 %3& %+ zip -add %pass %1.zip %3&`
+hzip 4doshlp 7:00 4help.exe 4dos.hlp helpcfg.exe readhelp.txt
+hzip 4nthlp 4:00 4nt.hlp 4nt.cnt readhelp.txt
+hzip tc32hlp 4:00 tcmd32.hlp tcmd32.cnt readhelp.txt
+endlocal
+

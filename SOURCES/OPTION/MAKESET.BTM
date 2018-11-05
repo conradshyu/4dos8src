@@ -1,0 +1,18 @@
+:: Base directory for Watcom C compiler
+set watcom=c:\wc
+
+:: Base directory for MASM 6.11
+set _masm=c:\as
+
+:: Base directory for Spontaneous Assembly
+::set spontasm=d:\spontasm
+
+:: Base directory for MIX TUI
+set tui=d:\src\cwindow
+
+:: Base directory for CTL3D
+::set ctl3d=g:\ctl3d
+
+:: Set up for MASM 6.0, set OS/2 toolkit directory
+set masmold=c:\as
+
